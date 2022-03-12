@@ -61,23 +61,27 @@ router.post('/', (req, res) => {
     }
 })
 
-router.put('/:id', async (req, res) => {
-    try {
-        let { notes, description, completed, project_id } = req.body;
-        if (!notes || !description || !completed || project_id) {
-            res.status(400).json({
-                message: "Please provide specified data"
-            })
-        } else {
-            let updatedAction = await Actions.update({ notes, description, completed, project_id })
-            res.status(201).json(updatedAction);
-        }
-    } catch (err) {
-        res.status(500).json({
-            message: "Did not update post",
-            err: err.message,
-            stack: err.stack
+router.put('/:id', (req, res) => {
+    let { notes, description, completed, project_id } = req.body;
+    if (!notes || !description || !completed || !project_id) {
+        res.status(400).json({
+            message: "please input all required fields"
         })
+    } else {
+        Actions.get(req.params.id)
+            .then(() => {
+                return Actions.update(req.params.id, req.body)
+            })
+            .then((data) => {
+                res.status(201).json(data);
+            })
+            .catch((err) => {
+                res.status(500).json({
+                    message: "Could not recieve data",
+                    err: err.message,
+                    stack: err.stack
+                })
+            })
     }
 })
 
